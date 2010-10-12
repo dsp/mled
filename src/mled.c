@@ -93,13 +93,20 @@ static void led(long int led_id) {
     }
 }
 
-static void blink(long int led_id, long int len) {
-    led(led_id);
-    usleep(len);
+static void stop(long int len) {
     led(0x0);
     usleep(S);
 }
 
+static void blink(long int led_id, long int len) {
+    led(led_id);
+    usleep(len);
+
+    /* make a pause of S after every symbol */
+    stop(S);
+}
+
+/* morse a single ascii character as a seq of symbols */
 static void morse(int led_id, int tomorse[]) {
     int i;
     for (i = 0; i < MORSE_DIM && tomorse[i] != -1; i++) {
@@ -110,6 +117,9 @@ static void morse(int led_id, int tomorse[]) {
         blink(led_id, tomorse[i]);
     }
     verbose(" ");
+
+    /* make a long pause after every character */
+    stop(L);
 }
 
 static void backupleds(long int *backup) {
@@ -198,7 +208,7 @@ int main(int argc, char * argv[]) {
             } else if (buf[i] >= '0' && buf[i] <= '9') {
                 morse(LEDS, morsetable[buf[i] - '0' + 26]);
             } else if (buf[i] == ' ') {
-                blink(0x0, WS);
+                stop(WS);
             } else {
                 fprintf(stderr, "non-ascii character found\n");
             }
