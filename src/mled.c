@@ -29,6 +29,8 @@
 #include <linux/kd.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+#include <time.h>
+#include <string.h>
 
 #define PROGRAM_NAME "mled"
 
@@ -43,7 +45,7 @@
 #define N -1
 #define verbose(...) if(opt_verbose) { fprintf(stdout, __VA_ARGS__); fflush(stdout);};
 
-static int fd = 0, opt_verbose = 0;
+static int fd = 0, opt_verbose = 0, opt_time = 0;
 static long int saved_led_state = 0x0;
 
 #define MORSE_DIM 5
@@ -135,6 +137,7 @@ static void help() {
     printf("Sends a message from stdin as morsecode to your CAPS LOCK led\n");
     printf("\n\
   -v                       verbose output\n\
+  -t                       show time instead of reading from stdin\n\
   -h                       show help\n\n");
 }
 
@@ -149,11 +152,70 @@ void sighandler(int signum) {
     exit(0);
 }
 
+void get_time(char *now_h, char *now_m) {
+    struct tm *ptr;
+    time_t lt;
+
+    lt = time(NULL);
+    ptr = localtime(&lt);
+
+    strftime(now_h, 100, "%H", ptr);
+    strftime(now_m, 100, "%M", ptr);
+}
+
+void blink_binary(int num) {
+    if (num & 1) {
+        printf("1");
+	blink(LEDS, L);
+    } else {
+        printf("0");
+	blink(LEDS, S);
+    }
+    if (num & 2) {
+        printf("1");
+	blink(LEDS, L);
+    } else {
+        printf("0");
+	blink(LEDS, S);
+    }
+    if (num & 4) {
+        printf("1");
+	blink(LEDS, L);
+    } else {
+        printf("0");
+	blink(LEDS, S);
+    }
+    if (num & 8) {
+        printf("1");
+	blink(LEDS, L);
+    } else {
+        printf("0");
+	blink(LEDS, S);
+    }
+    if (num & 16) {
+        printf("1");
+	blink(LEDS, L);
+    } else {
+        printf("0");
+	blink(LEDS, S);
+    }
+    if (num & 32) {
+        printf("1");
+	blink(LEDS, L);
+    } else {
+        printf("0");
+	blink(LEDS, S);
+    }
+printf("\n");
+}
+
 int main(int argc, char * argv[]) {
-    int in;
+    int in, n_h, n_m;
     char opt;
     size_t s, i;
     char *filename = NULL, buf[1024];
+    char now_h[3];
+    char now_m[3];
 
     if (geteuid() != 0) {
         fprintf(stderr, "program must be run as superuser\n");
@@ -171,7 +233,7 @@ int main(int argc, char * argv[]) {
         exit(ERROR);
     }
 
-    while((opt = getopt(argc, argv, "hv")) > 0) {
+    while((opt = getopt(argc, argv, "hvt")) > 0) {
         switch (opt) {
             case 'h':
                 help();
@@ -179,6 +241,9 @@ int main(int argc, char * argv[]) {
                 break;
             case 'v':
                 opt_verbose = 1;
+                break;
+            case 't':
+                opt_time = 1;
                 break;
         }
     }
@@ -198,6 +263,17 @@ int main(int argc, char * argv[]) {
 
     backupleds(&saved_led_state);
 
+    if (opt_time > 0) {
+        get_time(now_h, now_m);
+        printf("TIME: %s:%s \n", now_h, now_m);
+        n_h = atoi(now_h); 
+        n_m = atoi(now_m);
+	printf("%d %d\n", n_h, n_m);
+	blink_binary(n_h);
+	blink(LEDS, 6*S);
+	blink_binary(n_m);
+    } else {
+
     /* start morsing */
     while ((s = read(in, &buf, 1024)) > 0) {
         for (i = 0; i < s; i++) {
@@ -213,6 +289,8 @@ int main(int argc, char * argv[]) {
                 fprintf(stderr, "non-ascii character found\n");
             }
         }
+    }
+
     }
 
     led(saved_led_state);
