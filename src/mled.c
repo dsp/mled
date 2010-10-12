@@ -166,47 +166,48 @@ void get_time(char *now_h, char *now_m) {
 void blink_binary(int num) {
     if (num & 1) {
         printf("1");
-	blink(LEDS, L);
+        blink(LEDS, L);
     } else {
         printf("0");
-	blink(LEDS, S);
+        blink(LEDS, S);
     }
     if (num & 2) {
         printf("1");
-	blink(LEDS, L);
+        blink(LEDS, L);
     } else {
         printf("0");
-	blink(LEDS, S);
+        blink(LEDS, S);
     }
     if (num & 4) {
         printf("1");
-	blink(LEDS, L);
+        blink(LEDS, L);
     } else {
         printf("0");
-	blink(LEDS, S);
+        blink(LEDS, S);
     }
     if (num & 8) {
         printf("1");
-	blink(LEDS, L);
+        blink(LEDS, L);
     } else {
         printf("0");
-	blink(LEDS, S);
+        blink(LEDS, S);
     }
     if (num & 16) {
         printf("1");
-	blink(LEDS, L);
+        blink(LEDS, L);
     } else {
         printf("0");
-	blink(LEDS, S);
+        blink(LEDS, S);
     }
     if (num & 32) {
         printf("1");
-	blink(LEDS, L);
+        blink(LEDS, L);
     } else {
         printf("0");
-	blink(LEDS, S);
+        blink(LEDS, S);
     }
-printf("\n");
+
+    printf("\n");
 }
 
 int main(int argc, char * argv[]) {
@@ -268,10 +269,10 @@ int main(int argc, char * argv[]) {
         printf("TIME: %s:%s \n", now_h, now_m);
         n_h = atoi(now_h); 
         n_m = atoi(now_m);
-	printf("%d %d\n", n_h, n_m);
-	blink_binary(n_h);
-	blink(LEDS, 6*S);
-	blink_binary(n_m);
+        printf("%d %d\n", n_h, n_m);
+        blink_binary(n_h);
+        blink(LEDS, 6*S);
+        blink_binary(n_m);
     } else {
 
     /* start morsing */
