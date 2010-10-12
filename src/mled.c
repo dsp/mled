@@ -34,6 +34,7 @@
 
 /* LED_SCR = 0x1, LED_NUM = 0x2, LED_CAP = 0x4 */
 
+#define LEDS LED_CAP
 #define ERROR -1
 #define SUCCESS 0
 #define S 250000 /* Short dit, 0.5s */
@@ -191,11 +192,11 @@ int main(int argc, char * argv[]) {
     while ((s = read(in, &buf, 1024)) > 0) {
         for (i = 0; i < s; i++) {
             if (buf[i] >= 'A' && buf[i] <= 'Z') {
-                morse(LED_CAP, morsetable[buf[i] - 'A']);
+                morse(LEDS, morsetable[buf[i] - 'A']);
             } else if (buf[i] >= 'a' && buf[i] <= 'z') {
-                morse(LED_CAP, morsetable[buf[i] - 'a']);
+                morse(LEDS, morsetable[buf[i] - 'a']);
             } else if (buf[i] >= '0' && buf[i] <= '9') {
-                morse(LED_CAP, morsetable[buf[i] - '0' + 26]);
+                morse(LEDS, morsetable[buf[i] - '0' + 26]);
             } else if (buf[i] == ' ') {
                 blink(0x0, WS);
             } else {
