@@ -10,4 +10,5 @@ At the moment it mled only supports ascii-characters A-Za-z0-9.
 
 Tested devices
 --------------
-I only tested it on my ThinkPad. Works fine there :)
+ * ThinkPad X-Series
+ * TypeMatrix 2030 (tested by maximeh)
