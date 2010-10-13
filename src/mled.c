@@ -152,6 +152,7 @@ void sighandler(int signum) {
     exit(0);
 }
 
+/* get the current time. */
 void get_time(char *now_h, char *now_m) {
     struct tm *ptr;
     time_t lt;
@@ -163,51 +164,19 @@ void get_time(char *now_h, char *now_m) {
     strftime(now_m, 100, "%M", ptr);
 }
 
-void blink_binary(int num) {
-    if (num & 1) {
-        printf("1");
-        blink(LEDS, L);
-    } else {
-        printf("0");
-        blink(LEDS, S);
+/* convert an integer to binary, then blink. */
+void blink_binary(unsigned int num) {
+    unsigned int i;
+    for (i = 1; i <= 32; i <<= 1) {
+        if (num & i) {
+	    verbose("1");
+	    blink(LEDS, L);
+	} else {
+	    verbose("0");
+	    blink(LEDS, S);
+	}
     }
-    if (num & 2) {
-        printf("1");
-        blink(LEDS, L);
-    } else {
-        printf("0");
-        blink(LEDS, S);
-    }
-    if (num & 4) {
-        printf("1");
-        blink(LEDS, L);
-    } else {
-        printf("0");
-        blink(LEDS, S);
-    }
-    if (num & 8) {
-        printf("1");
-        blink(LEDS, L);
-    } else {
-        printf("0");
-        blink(LEDS, S);
-    }
-    if (num & 16) {
-        printf("1");
-        blink(LEDS, L);
-    } else {
-        printf("0");
-        blink(LEDS, S);
-    }
-    if (num & 32) {
-        printf("1");
-        blink(LEDS, L);
-    } else {
-        printf("0");
-        blink(LEDS, S);
-    }
-
-    printf("\n");
+    verbose("\n");
 }
 
 int main(int argc, char * argv[]) {
@@ -266,10 +235,9 @@ int main(int argc, char * argv[]) {
 
     if (opt_time > 0) {
         get_time(now_h, now_m);
-        printf("TIME: %s:%s \n", now_h, now_m);
+        verbose("TIME: %s:%s \n", now_h, now_m);
         n_h = atoi(now_h); 
         n_m = atoi(now_m);
-        printf("%d %d\n", n_h, n_m);
         blink_binary(n_h);
         blink(LEDS, 6*S);
         blink_binary(n_m);
