@@ -179,13 +179,23 @@ void blink_binary(unsigned int num) {
     verbose("\n");
 }
 
+static void binary_clock() {
+    int n_h, n_m;
+    char now_h[3], now_m[3];
+
+    get_time(now_h, now_m);
+    verbose("TIME: %s:%s \n", now_h, now_m);
+    n_h = atoi(now_h);
+    n_m = atoi(now_m);
+    blink_binary(n_h);
+    blink(LEDS, 6*S);
+    blink_binary(n_m);
+}
+
 int main(int argc, char * argv[]) {
-    int in, n_h, n_m;
     char opt;
     size_t s, i;
     char *filename = NULL, buf[1024];
-    char now_h[3];
-    char now_m[3];
 
     if (geteuid() != 0) {
         fprintf(stderr, "program must be run as superuser\n");
@@ -203,6 +213,7 @@ int main(int argc, char * argv[]) {
         exit(ERROR);
     }
 
+    /* argument parsing */
     while((opt = getopt(argc, argv, "hvt")) > 0) {
         switch (opt) {
             case 'h':
@@ -220,51 +231,48 @@ int main(int argc, char * argv[]) {
 
     argc-= optind;
     argv+= optind;
-    /* argument parsing */
-    if (argc > 1) {
-        filename = argv[1];
-        if ((in = open(filename, O_RDONLY)) == ERROR) {
-            perror("open");
-            exit(ERROR);
-        }
-    } else {
-        in = STDIN_FILENO;
-    }
 
     backupleds(&saved_led_state);
 
-    if (opt_time > 0) {
-        get_time(now_h, now_m);
-        verbose("TIME: %s:%s \n", now_h, now_m);
-        n_h = atoi(now_h); 
-        n_m = atoi(now_m);
-        blink_binary(n_h);
-        blink(LEDS, 6*S);
-        blink_binary(n_m);
+    if (opt_time) {
+        binary_clock();
     } else {
+        int in;
+        if (argc > 1) {
+            filename = argv[1];
+            if ((in = open(filename, O_RDONLY)) == ERROR) {
+                perror("open");
+                led(saved_led_state);
+                exit(ERROR);
+            }
+        } else {
+            in = STDIN_FILENO;
+        }
 
-    /* start morsing */
-    while ((s = read(in, &buf, 1024)) > 0) {
-        for (i = 0; i < s; i++) {
-            if (buf[i] >= 'A' && buf[i] <= 'Z') {
-                morse(LEDS, morsetable[buf[i] - 'A']);
-            } else if (buf[i] >= 'a' && buf[i] <= 'z') {
-                morse(LEDS, morsetable[buf[i] - 'a']);
-            } else if (buf[i] >= '0' && buf[i] <= '9') {
-                morse(LEDS, morsetable[buf[i] - '0' + 26]);
-            } else if (buf[i] == ' ') {
-                stop(WS);
-            } else {
-                fprintf(stderr, "non-ascii character found\n");
+        backupleds(&saved_led_state);
+
+        /* start morsing */
+        while ((s = read(in, &buf, 1024)) > 0) {
+            for (i = 0; i < s; i++) {
+                if (buf[i] >= 'A' && buf[i] <= 'Z') {
+                    morse(LEDS, morsetable[buf[i] - 'A']);
+                } else if (buf[i] >= 'a' && buf[i] <= 'z') {
+                    morse(LEDS, morsetable[buf[i] - 'a']);
+                } else if (buf[i] >= '0' && buf[i] <= '9') {
+                    morse(LEDS, morsetable[buf[i] - '0' + 26]);
+                } else if (buf[i] == ' ') {
+                    stop(WS);
+                } else {
+                    fprintf(stderr, "non-ascii character found\n");
+                }
             }
         }
-    }
 
+        close(in);
     }
 
     led(saved_led_state);
 
-    close(in);
     close(fd);
 
     return 0;
